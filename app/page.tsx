@@ -78,6 +78,7 @@ export default function HomePage() {
               transition
             "
           >
+            
             <i className="fas fa-search" />
             Search
           </button>
