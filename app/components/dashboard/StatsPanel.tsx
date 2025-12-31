@@ -152,7 +152,6 @@ export default function StatsPanel() {
                 innerRadius={45}
                 outerRadius={70}
                 paddingAngle={4}
-                activeIndex={activeIndex}
                 activeShape={renderActiveShape}
                 onMouseEnter={(_, index) => setActiveIndex(index)}
                 stroke="none"
