@@ -1,24 +1,24 @@
 import MainFooter from '../components/footer/MainFooter';
 
+
 export default function MainLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen w-full flex flex-col bg-white">
       
       {/* TOP BAR */}
-      <div className="h-5 bg-red-700" />
+      <div className="h-5 bg-red-700 w-full" />
 
       {/* PAGE CONTENT */}
-      <div className="flex-1">
+      <main className="flex-1 w-full">
         {children}
-      </div>
+      </main>
 
       {/* FOOTER */}
       <MainFooter />
-
     </div>
   );
 }
