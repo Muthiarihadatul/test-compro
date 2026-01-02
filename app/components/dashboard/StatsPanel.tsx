@@ -206,8 +206,14 @@ export default function StatsPanel() {
         <div className="w-full h-[300px] recharts-clean">
           <ResponsiveContainer width="100%" height="100%" style={{ outline: 'none' }}>
             <BarChart data={yearData}>
-            <XAxis dataKey="year" />
-            <YAxis />
+            <XAxis
+              dataKey="year"
+              tick={{ fontSize: 11, fill: '#6b7280' }}   // text-xs + abu halus
+            />
+
+            <YAxis
+              tick={{ fontSize: 11, fill: '#6b7280' }}
+            />
 
             <Tooltip
                 cursor={{ fill: 'rgba(157, 0, 9, 0.05)' }}
