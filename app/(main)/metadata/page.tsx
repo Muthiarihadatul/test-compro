@@ -1,47 +1,21 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import MainFooter from '@/app/components/footer/MainFooter';
+import { useSearchParams } from 'next/navigation';
 import AuthorPopup from '@/app/components/metadata/AuthorPopup';
 
-// /* =======================
-//    DUMMY AUTHOR DATA
-// ======================= */
-// const AUTHORS = {
-//   author1: {
-//     name: 'T. Maisha Shahrani',
-//     affiliation: 'Universitas Telkom',
-//     department: 'S1 Teknik Telekomunikasi',
-//     totalArticle: 12,
-//     totalCitation: 45,
-//     hIndexScopus: 10,
-//     hIndexGoogle: 14,
-//     hIndexWos: 3,
-//   },
-//   author2: {
-//     name: 'Aliyya Nur Ramdhania',
-//     affiliation: 'Universitas Telkom',
-//     department: 'S1 Teknik Telekomunikasi',
-//     totalArticle: 2,
-//     totalCitation: 5,
-//     hIndexScopus: 0,
-//     hIndexGoogle: 1,
-//     hIndexWos: 0,
-//   },
-//   author3: {
-//     name: 'Muharman Lubis',
-//     affiliation: 'Universitas Telkom',
-//     department: 'S1 Teknik Telekomunikasi',
-//     totalArticle: 7,
-//     totalCitation: 20,
-//     hIndexScopus: 3,
-//     hIndexGoogle: 6,
-//     hIndexWos: 1,
-//   },
-// };
+/* =====================
+   TYPES
+===================== */
 
+// Author di publication (ringkas)
+type PublicationAuthor = {
+  id: string | null;
+  name: string;
+};
 
-type Author = {
+// Author detail dari /author/:id
+type AuthorDetail = {
   id: string;
   name: string;
   affiliation: string;
@@ -54,43 +28,55 @@ type Author = {
 };
 
 type Publication = {
-  id: string;
   title: string;
   year: number;
   journal: string;
   citation: number;
   doi: string;
-  authors: Author[];
+  authors: PublicationAuthor[];
 };
 
-type PageProps = {
-  params: {
-    id: string;
-  };
-};
+/* =====================
+   PAGE
+===================== */
 
-
-
-
-
-export default function PublicationPage({ params }: PageProps) {
-  const publicationId = params.id;
+export default function PublicationPage() {
+  const searchParams = useSearchParams();
+  const publicationId = searchParams.get('id');
 
   const [publication, setPublication] = useState<Publication | null>(null);
-  const [selectedAuthor, setSelectedAuthor] = useState<Author | null>(null);
+  const [selectedAuthor, setSelectedAuthor] = useState<AuthorDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [authorLoading, setAuthorLoading] = useState(false);
 
+  /* =====================
+     FETCH PUBLICATION
+  ===================== */
   useEffect(() => {
+    if (!publicationId) return;
+
     const fetchPublication = async () => {
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/journal/${publicationId}`
-        );
+        const base = process.env.NEXT_PUBLIC_API_BASE_URL;
+        const res = await fetch(`${base}/journal/${publicationId}`);
 
         if (!res.ok) throw new Error('Failed to fetch publication');
 
         const data = await res.json();
-        setPublication(data);
+
+        const mappedPublication: Publication = {
+          title: data.title,
+          year: Number(data.publicationYear),
+          journal: data.publicationName,
+          citation: data.citation,
+          doi: data.doi.replace('DOI: ', ''),
+          authors: data.authors.map((a: any) => ({
+            id: a.id,
+            name: a.name,
+          })),
+        };
+
+        setPublication(mappedPublication);
       } catch (error) {
         console.error(error);
       } finally {
@@ -101,6 +87,47 @@ export default function PublicationPage({ params }: PageProps) {
     fetchPublication();
   }, [publicationId]);
 
+  /* =====================
+     FETCH AUTHOR DETAIL
+  ===================== */
+  const fetchAuthorDetail = async (authorId: string) => {
+    try {
+      setAuthorLoading(true);
+
+      const base = process.env.NEXT_PUBLIC_API_BASE_URL;
+      const res = await fetch(`${base}/author/${authorId}`);
+
+      if (!res.ok) throw new Error('Failed to fetch author');
+
+      const data = await res.json();
+
+      const mappedAuthor: AuthorDetail = {
+        id: authorId,
+        name: data.nama,
+        affiliation: data.affiliation,
+        department: data.department,
+        totalArticle: data.article,
+        totalCitation: data.citation,
+        hIndexScopus: data.hindex_scopus,
+        hIndexGoogle: data.hindex_gscholar,
+        hIndexWos: data.hindex_wos,
+      };
+
+      setSelectedAuthor(mappedAuthor);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setAuthorLoading(false);
+    }
+  };
+
+  /* =====================
+     STATES
+  ===================== */
+  if (!publicationId) {
+    return <p className="text-center py-20">Invalid publication ID</p>;
+  }
+
   if (loading) {
     return <p className="text-center py-20">Loading...</p>;
   }
@@ -109,50 +136,35 @@ export default function PublicationPage({ params }: PageProps) {
     return <p className="text-center py-20">Publication not found</p>;
   }
 
-
+  /* =====================
+     RENDER
+  ===================== */
   return (
     <>
       <main className="min-h-screen bg-white px-4 sm:px-6 py-10">
         <div className="max-w-5xl mx-auto">
-          
+
           {/* TITLE */}
-          <h1 className="text-xl sm:text-2xl font-semibold text-red-700 leading-snug mb-8">
-            Implementation of Building Construction and Environment Control for
-            Data Centre Based on ANSI/TIA-942 in Networking Content Company
+          <h1 className="text-xl sm:text-2xl font-semibold text-red-700 mb-8">
+            {publication.title}
           </h1>
 
           {/* METADATA */}
-          <div
-            className="
-              max-w-4xl
-              mx-auto
-              px-4
-              grid
-              grid-cols-1
-              min-[502px]:grid-cols-[150px_1fr]
-              lg:grid-cols-[200px_1fr]
-              gap-x-6
-              gap-y-4
-              text-sm
-              text-gray-800
-              leading-relaxed
-            "
-          >
-            {/* AUTHORS */}
+          <div className="max-w-4xl mx-auto px-4 grid grid-cols-[150px_1fr] gap-x-6 gap-y-4 text-sm">
             <div className="text-gray-500 text-right">Authors</div>
             <div className="space-x-2">
               {publication.authors.map((author, index) => (
                 <button
-                  key={author.id}
-                  onClick={() => setSelectedAuthor(author)}
-                  className="text-red-700 hover:underline"
+                  key={author.id ?? author.name}
+                  disabled={!author.id}
+                  onClick={() => author.id && fetchAuthorDetail(author.id)}
+                  className="text-red-700 hover:underline disabled:text-gray-400 disabled:cursor-not-allowed"
                 >
                   {author.name}
                   {index < publication.authors.length - 1 && ','}
                 </button>
               ))}
             </div>
-
 
             <div className="text-gray-500 text-right">Year</div>
             <div>{publication.year}</div>
@@ -177,6 +189,13 @@ export default function PublicationPage({ params }: PageProps) {
         </div>
       </main>
 
+      {/* AUTHOR LOADING */}
+      {authorLoading && (
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center text-white z-50">
+          Loading author...
+        </div>
+      )}
+
       {/* AUTHOR POPUP */}
       {selectedAuthor && (
         <AuthorPopup
@@ -185,7 +204,6 @@ export default function PublicationPage({ params }: PageProps) {
           onClose={() => setSelectedAuthor(null)}
         />
       )}
-
     </>
   );
 }

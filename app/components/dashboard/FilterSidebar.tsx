@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 
 export type FilterParams = {
   yearFrom?: string;
@@ -8,39 +9,45 @@ export type FilterParams = {
   author?: string;
 };
 
-export default function FilterSidebar({
-  onApply,
-}: {
-  onApply: (filters: FilterParams) => void;
-}) {
+export default function FilterSidebar() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [yearMode, setYearMode] = useState<'range' | 'single'>('range');
-  const [yearFrom, setYearFrom] = useState('');
-  const [yearTo, setYearTo] = useState('');
-  const [author, setAuthor] = useState('');
+  const [yearFrom, setYearFrom] = useState(searchParams.get('yearFrom') ?? '');
+  const [yearTo, setYearTo] = useState(searchParams.get('yearTo') ?? '');
+  const [author, setAuthor] = useState(searchParams.get('author') ?? '');
+
+  const handleApply = () => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    // YEAR
+    if (yearMode === 'single' && yearFrom) {
+      params.set('yearFrom', yearFrom);
+      params.set('yearTo', yearFrom);
+    } else {
+      yearFrom ? params.set('yearFrom', yearFrom) : params.delete('yearFrom');
+      yearTo ? params.set('yearTo', yearTo) : params.delete('yearTo');
+    }
+
+    // AUTHOR
+    author ? params.set('author', author) : params.delete('author');
+
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+  };
 
   const clearFilter = () => {
-    setYearMode('range');
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('yearFrom');
+    params.delete('yearTo');
+    params.delete('author');
+
     setYearFrom('');
     setYearTo('');
     setAuthor('');
-    onApply({});
-  };
 
-  const handleApply = () => {
-    // kalau single → samakan
-    if (yearMode === 'single' && yearFrom) {
-      onApply({
-        yearFrom,
-        yearTo: yearFrom,
-        author,
-      });
-    } else {
-      onApply({
-        yearFrom,
-        yearTo,
-        author,
-      });
-    }
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   return (
@@ -89,14 +96,12 @@ export default function FilterSidebar({
             />
           </div>
         ) : (
-          <div className="mt-2">
-            <input
-              value={yearFrom}
-              onChange={(e) => setYearFrom(e.target.value)}
-              className="w-full border rounded-lg px-2 py-1 text-sm text-center"
-              placeholder="2000"
-            />
-          </div>
+          <input
+            value={yearFrom}
+            onChange={(e) => setYearFrom(e.target.value)}
+            className="w-full border rounded-lg px-2 py-1 text-sm text-center mt-2"
+            placeholder="2020"
+          />
         )}
       </section>
 
@@ -108,16 +113,6 @@ export default function FilterSidebar({
           onChange={(e) => setAuthor(e.target.value)}
           className="w-full border rounded-lg px-2 py-1 text-sm mt-1"
           placeholder="Author name"
-        />
-      </section>
-
-      {/* AFFILIATION (STATIC) */}
-      <section>
-        <p className="text-sm font-medium">Affiliation</p>
-        <input
-          readOnly
-          value="Telkom University"
-          className="w-full border rounded-lg px-2 py-1 text-sm mt-1 bg-gray-50"
         />
       </section>
 
