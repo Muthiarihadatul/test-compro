@@ -11,6 +11,8 @@ type Author = {
   hIndexScopus: number;
   hIndexGoogle: number;
   hIndexWos: number;
+  sintaScoreOverall: number;
+  sintaScore3yr: number;
 };
 
 type AuthorPopupProps = {
@@ -50,6 +52,8 @@ export default function AuthorPopup({
           <p><b>h-index Scopus:</b> {author.hIndexScopus}</p>
           <p><b>h-index Google:</b> {author.hIndexGoogle}</p>
           <p><b>h-index WoS:</b> {author.hIndexWos}</p>
+          <p><b>Sinta Score Overall:</b> {author.sintaScoreOverall}</p>
+          <p><b>Sinta Score 3yr:</b> {author.sintaScore3yr}</p>
 
           {/* OPTIONAL */}
           <p className="pt-2 text-xs text-gray-400">

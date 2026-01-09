@@ -25,6 +25,8 @@ type AuthorDetail = {
   hIndexScopus: number;
   hIndexGoogle: number;
   hIndexWos: number;
+  sintaScoreOverall: number;
+  sintaScore3yr: number;
 };
 
 type Publication = {
@@ -111,6 +113,8 @@ export default function PublicationPage() {
         hIndexScopus: data.hindex_scopus,
         hIndexGoogle: data.hindex_gscholar,
         hIndexWos: data.hindex_wos,
+        sintaScoreOverall: data.sinta_score_overall,
+        sintaScore3yr: data.sinta_score_3yr,
       };
 
       setSelectedAuthor(mappedAuthor);
