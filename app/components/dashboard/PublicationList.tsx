@@ -46,7 +46,7 @@ export default function PublicationList() {
   const [loading, setLoading] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 5;
+  const ITEMS_PER_PAGE = 15;
 
   const [selected, setSelected] = useState<number[]>([]);
   const [openExport, setOpenExport] = useState(false);
